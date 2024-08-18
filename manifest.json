@@ -3,7 +3,7 @@
   "name": "Schoology Photos",
   "description": "Base Level Extension",
   "version": "1.0",
-  "host_permissions": ["<all_urls>", "tabs", "activeTab"],
+  "host_permissions": ["fuhsd.schoology.com"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": "members.png"

@@ -22,6 +22,7 @@ function get_url(){
     return new Promise((resolve, reject) => {
         chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
           if (chrome.runtime.lastError) {
+            
             return reject(chrome.runtime.lastError);
           }
     
@@ -35,6 +36,7 @@ function get_url(){
 
 /** Get the course ID from given URL */
 function get_course_id(url) {
+    console.log("LJA LOG: " + url)
     // URL object
     let url_obj = new URL(url);
   
@@ -80,14 +82,16 @@ function update_popup(big_response){
 get_url().then(url => {
     course_id = get_course_id(url);
 
-    //RED: Not in schoology class
-    if (course_id == null){
-        document.getElementById("header").style.backgroundColor = red_main;
-        document.getElementById("header_message").innerHTML = "Please open a class in Schoology";
-    
+    console.log("LJA LOG1: " + course_id);
+
     //GREEN: In schoology class
-    } else {
+    if (course_id > 100){
         document.getElementById("header").style.backgroundColor = green_main;
         document.getElementById("header_message").innerHTML = "Welcome";
+    
+    //RED: Not in schoology class
+    } else {
+        document.getElementById("header").style.backgroundColor = red_main;
+        document.getElementById("header_message").innerHTML = "Please open a class in Schoology";
     }
 })
