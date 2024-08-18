@@ -1,51 +1,64 @@
-// Preface (to those reading)
-// I do not write JS, in fact do barely any webdev at all.
-// This code is filled with horrendous code because I was writing this at 1am, including data races, and other atrocious things. I don't care enough to write proper JS
-// This is a build-upon of something a friend (MV co23') wrote, can only claim partial credit for this
+/**
+ * Schoology Classmates
+ * 
+ * 
+ */
+
+const red_main = "#c72c1e";
+const green_main = "#38bd17";
 
 //Setup Vars
-
 const course_id_input = document.getElementById("course_id_input");
-
-let course_id = 0;
-
 const num_pages_input = document.getElementById("num_pages");
-
-let num_pages = 0; 
-
 let globalTimerID = 0;
 
 //Photos Vars
-
 let count = 1; // request count
-
 let massiveResponse = '';
-
 let status = 'idle'; //idle, running, stopped
-
-course_id_input.addEventListener("change", () => {
-	course_id = course_id_input.value;
-});
-
-num_pages_input.addEventListener("change", () => {
-	num_pages = num_pages_input.value;
-});
 
 document.getElementById("submit_button").addEventListener("click", () => {
 	get_members();
 });
 
+/**
+ * Fetch the url of the current page
+ */
+function find_course_id(){
+    
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+        /** Get URL */
+        let activeTab = tabs[0];
+        let activeTabUrl = activeTab.url;
+        
+        if (activeTabUrl.includes("fuhsd.schoology.com/course/")) {
+            document.getElementById("header").style.backgroundColor = green_main;
+            document.getElementById("header_message").innerHTML = "Welcome";
+        } else {
+            document.getElementById("header").style.backgroundColor = red_main;
+            document.getElementById("header_message").innerHTML = "Please open a class in schoology";
+        }
+    });
+
+
+}
+
+/**
+ * Start separate thread to update massiveResponse with a html page of all members
+ */
 function get_members(){
-	console.log("me?");
 	const timeout = 500; // time between requests (ms)
 	const timerID = setInterval(get_members_inner, timeout);
 	globalTimerID = timerID;
 }
 
+/**
+ * Inner function to be run until all members are fetched
+ */
 function get_members_inner() {
-	console.log("me too?");
-	console.log(num_pages);
-	console.log(course_id);
+    let course_id = course_id_input.value;
+    let num_pages = num_pages_input.value;
+
     const xhr = new XMLHttpRequest();
     xhr.onload = () => {
         xhr.status === 200 ? massiveResponse += `${xhr.response}\n` : console.error('Error!');
@@ -54,10 +67,10 @@ function get_members_inner() {
     xhr.send();
 
     if (count % 50 === 0)
-        console.log(count);
+        console.log("LJA LOG: " + count);
 
     if (count >= num_pages) {
-    	console.log("I'm done!!");
+    	console.log("LJA LOG: Finished");
         clearInterval(globalTimerID);
         setTimeout(() => {
             console.log(massiveResponse);
@@ -69,9 +82,11 @@ function get_members_inner() {
         count++;
 }
 
+/**
+ * Update the popup with loaded members
+ */
 function update_popup(){
-	console.log("hey, i'm being done");
 	document.getElementById("popup").innerHTML = massiveResponse;
 }
 
-console.log("running");
+find_course_id();
