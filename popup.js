@@ -7,57 +7,58 @@
 const red_main = "#c72c1e";
 const green_main = "#38bd17";
 
-//Setup Vars
-const course_id_input = document.getElementById("course_id_input");
-const num_pages_input = document.getElementById("num_pages");
-let globalTimerID = 0;
+const page_num_input = document.getElementById("num_pages");
 
-//Photos Vars
-let count = 1; // request count
-let massiveResponse = '';
-let status = 'idle'; //idle, running, stopped
+let course_id = 0;
 
 document.getElementById("submit_button").addEventListener("click", () => {
 	get_members();
 });
 
 /**
- * Fetch the url of the current page
+ * Return the url of the current page
  */
-function find_course_id(){
+function get_url(){
+    return new Promise((resolve, reject) => {
+        chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+          if (chrome.runtime.lastError) {
+            return reject(chrome.runtime.lastError);
+          }
     
-    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-        /** Get URL */
-        let activeTab = tabs[0];
-        let activeTabUrl = activeTab.url;
-        
-        if (activeTabUrl.includes("fuhsd.schoology.com/course/")) {
-            document.getElementById("header").style.backgroundColor = green_main;
-            document.getElementById("header_message").innerHTML = "Welcome";
-        } else {
-            document.getElementById("header").style.backgroundColor = red_main;
-            document.getElementById("header_message").innerHTML = "Please open a class in schoology";
-        }
-    });
+          let activeTab = tabs[0];
+          let activeTabUrl = activeTab.url;
+    
+          resolve(activeTabUrl);
+        });
+      });
+}
 
+/** Get the course ID from given URL */
+function get_course_id(url) {
+    // URL object
+    let url_obj = new URL(url);
+  
+    // Split pathname into parts
+    let path_parts = url_obj.pathname.split('/');
+  
+    // Find the 'course' segment and get the following part as course ID
+    let course_index = path_parts.indexOf('course');
 
+    console.log("LJA LOG4: " + url);
+
+    if (url.includes("fuhsd.schoology.com") && course_index !== -1 && course_index + 1 < path_parts.length) {
+      return path_parts[course_index + 1];
+
+    } else {
+      return null; // Return null if course ID is not found
+    }
 }
 
 /**
  * Start separate thread to update massiveResponse with a html page of all members
  */
 function get_members(){
-	const timeout = 500; // time between requests (ms)
-	const timerID = setInterval(get_members_inner, timeout);
-	globalTimerID = timerID;
-}
-
-/**
- * Inner function to be run until all members are fetched
- */
-function get_members_inner() {
-    let course_id = course_id_input.value;
-    let num_pages = num_pages_input.value;
+    let page_num = page_num_input.value;    
 
     const xhr = new XMLHttpRequest();
     xhr.onload = () => {
@@ -65,21 +66,6 @@ function get_members_inner() {
     };
     xhr.open('GET', `https://fuhsd.schoology.com/enrollments/edit/members/course/${course_id}/ajax?ss=&p=${count}`);
     xhr.send();
-
-    if (count % 50 === 0)
-        console.log("LJA LOG: " + count);
-
-    if (count >= num_pages) {
-    	console.log("LJA LOG: Finished");
-        clearInterval(globalTimerID);
-        setTimeout(() => {
-            console.log(massiveResponse);
-            console.log(count);
-            update_popup();
-        }, 2000);
-    }
-    else
-        count++;
 }
 
 /**
@@ -89,4 +75,18 @@ function update_popup(){
 	document.getElementById("popup").innerHTML = massiveResponse;
 }
 
-find_course_id();
+/** Fetch the URL, get course ID */
+get_url().then(url => {
+    course_id = get_course_id(url);
+
+    //RED: Not in schoology class
+    if (course_id == null){
+        document.getElementById("header").style.backgroundColor = red_main;
+        document.getElementById("header_message").innerHTML = "Please open a class in Schoology";
+    
+    //GREEN: In schoology class
+    } else {
+        document.getElementById("header").style.backgroundColor = green_main;
+        document.getElementById("header_message").innerHTML = "Welcome";
+    }
+})
