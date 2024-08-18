@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Schoology Photos",
+  "name": "Schoology Classmates",
   "description": "Base Level Extension",
   "version": "1.0",
-  "host_permissions": ["fuhsd.schoology.com"],
+  "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": "members.png"
