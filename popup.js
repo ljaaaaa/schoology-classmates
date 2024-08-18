@@ -44,8 +44,6 @@ function get_course_id(url) {
     // Find the 'course' segment and get the following part as course ID
     let course_index = path_parts.indexOf('course');
 
-    console.log("LJA LOG4: " + url);
-
     if (url.includes("fuhsd.schoology.com") && course_index !== -1 && course_index + 1 < path_parts.length) {
       return path_parts[course_index + 1];
 
@@ -55,24 +53,27 @@ function get_course_id(url) {
 }
 
 /**
- * Start separate thread to update massiveResponse with a html page of all members
+ * Update big_response with html members list + update popup
  */
 function get_members(){
-    let page_num = page_num_input.value;    
+    let page_num = page_num_input.value; 
+    let big_response = '';   
 
     const xhr = new XMLHttpRequest();
     xhr.onload = () => {
-        xhr.status === 200 ? massiveResponse += `${xhr.response}\n` : console.error('Error!');
+        xhr.status === 200 ? big_response += `${xhr.response}\n` : console.error('Error!');
+
+        update_popup(big_response);
     };
-    xhr.open('GET', `https://fuhsd.schoology.com/enrollments/edit/members/course/${course_id}/ajax?ss=&p=${count}`);
+    xhr.open('GET', `https://fuhsd.schoology.com/enrollments/edit/members/course/${course_id}/ajax?ss=&p=${page_num}`);
     xhr.send();
 }
 
 /**
  * Update the popup with loaded members
  */
-function update_popup(){
-	document.getElementById("popup").innerHTML = massiveResponse;
+function update_popup(big_response){
+	document.getElementById("popup").innerHTML = big_response;
 }
 
 /** Fetch the URL, get course ID */
