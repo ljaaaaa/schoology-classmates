@@ -1,7 +1,7 @@
 /**
  * Schoology Classmates
  * 
- * 
+ * @author Lilja
  */
 
 const red_main = "#c72c1e";
