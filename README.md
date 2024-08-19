@@ -1,7 +1,7 @@
 # schoology-classmates
 
 ### Installation (Chrome)
-1. Go to releases and download schoology-classmates-x.x.zip
+1. Download the latest release (zip file)
 2. Extract zip file
 3. Go to chrome://extensions
 4. Enable developer mode (top right)
